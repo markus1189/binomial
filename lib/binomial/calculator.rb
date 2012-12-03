@@ -12,25 +12,20 @@ module Binomial
       @probability = params[:probability]
       @target = params[:target]
 
-      if @trials <= 0
-        raise "Error: trials[#{@trials}] must be > 0"
-      end
+      check_positive(:@trials)
+      check_positive(:@target)
+      check_positive(:@probability)
 
-      if @target <= 0
-        raise "Error: target[#{@target}] must be > 0"
-      end
+      @probability <= 1  or raise "Error: probability[#{@probability}] must be <= 1"
+      @trials >= @target or raise "Error: target[#{@target}] must be < trials[#{@trials}]"
+    end
 
-      if @probability <= 0
-        raise "Error: probability[#{@probability}] must be > 0"
-      end
-
-      if @probability > 1
-        raise "Error: probability[#{@probability}] must be <= 1"
-      end
-
-      if @trials < @target
-        raise "Error: target[#{@target}] must be < trials[#{@trials}]"
-      end
+    # param: name of instance variable WITH leading @
+    def check_positive(inst_var)
+      value = instance_variable_get(inst_var)
+      var_name = inst_var.to_s.delete('@')
+      value > 0 or
+        raise "Error: '#{var_name}' must be > 0, but was: #{value}"
     end
 
     def model
@@ -40,7 +35,7 @@ module Binomial
     # A representation of the equation performed
     def equation
       "P(X=#{@target}) = #{@trials}C#{@target} * #{@probability}^#{@target} *"
-      + " #{1 - @probability}^#{@trials - @target} = #{calculate().to_s}"
+      + " #{1 - @probability}^#{@trials - @target} = #{calculate}"
     end
 
     # Calculates the result
